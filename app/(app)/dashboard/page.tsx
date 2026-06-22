@@ -1,19 +1,27 @@
+import { AgentDashboard } from "@/components/agent-dashboard";
 import { CustomerDashboard } from "@/components/customer-dashboard";
 import { isAgent, requireUser } from "@/lib/auth-helpers";
+import { listTicketsQuerySchema } from "@/lib/validations";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const user = await requireUser();
 
-  if (isAgent(user)) {
-    return (
-      <div>
-        <h1 className="text-2xl font-semibold text-slate-900">
-          Agent dashboard
-        </h1>
-        <p className="mt-1 text-sm text-slate-500">Coming up next.</p>
-      </div>
-    );
+  if (!isAgent(user)) {
+    return <CustomerDashboard user={user} />;
   }
 
-  return <CustomerDashboard user={user} />;
+  // Parse only present, scalar filter params so enum validation stays clean.
+  const sp = await searchParams;
+  const raw: Record<string, string> = {};
+  for (const key of ["status", "priority", "tagId", "q"]) {
+    const value = sp[key];
+    if (typeof value === "string" && value) raw[key] = value;
+  }
+  const filters = listTicketsQuerySchema.parse(raw);
+
+  return <AgentDashboard user={user} filters={filters} />;
 }
