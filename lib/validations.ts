@@ -38,6 +38,12 @@ export const createCommentSchema = z.object({
 });
 export type CreateCommentInput = z.infer<typeof createCommentSchema>;
 
+// Tags
+export const createTagSchema = z.object({
+  name: z.string().trim().min(2, "Tag name is too short").max(40),
+});
+export type CreateTagInput = z.infer<typeof createTagSchema>;
+
 // Ticket list filters (agent dashboard / search).
 export const listTicketsQuerySchema = z.object({
   status: ticketStatusEnum.optional(),
