@@ -1,0 +1,108 @@
+// XenDesk data model — support ticketing system.
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  CUSTOMER
+  AGENT
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(CUSTOMER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  ticketsCreated  Ticket[]  @relation("CustomerTickets")
+  ticketsAssigned Ticket[]  @relation("AgentTickets")
+  comments        Comment[]
+
+  @@index([role])
+  @@map("users")
+}
+
+model Ticket {
+  id          String         @id @default(cuid())
+  title       String
+  description String
+  status      TicketStatus   @default(OPEN)
+  priority    TicketPriority @default(MEDIUM)
+  customerId  String
+  agentId     String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  customer User        @relation("CustomerTickets", fields: [customerId], references: [id], onDelete: Cascade)
+  agent    User?       @relation("AgentTickets", fields: [agentId], references: [id], onDelete: SetNull)
+  comments Comment[]
+  tags     TicketTag[]
+
+  // Indexes tuned for dashboard filters and ownership lookups.
+  @@index([customerId])
+  @@index([agentId])
+  @@index([status])
+  @@index([priority])
+  @@index([status, priority])
+  @@index([createdAt])
+  @@map("tickets")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  body      String
+  ticketId  String
+  authorId  String
+  createdAt DateTime @default(now())
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  // Optimized for chronological thread reads on a ticket.
+  @@index([ticketId, createdAt])
+  @@index([authorId])
+  @@map("comments")
+}
+
+model Tag {
+  id      String      @id @default(cuid())
+  name    String      @unique
+  tickets TicketTag[]
+
+  @@map("tags")
+}
+
+// Explicit many-to-many join between tickets and tags.
+model TicketTag {
+  ticketId String
+  tagId    String
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([ticketId, tagId])
+  @@index([tagId])
+  @@map("ticket_tags")
+}
