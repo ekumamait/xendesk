@@ -23,7 +23,11 @@ export async function seedDatabase(prisma: PrismaClient): Promise<SeedCounts> {
   const [agentAda, agentGrace, alice, bob, carol] = await Promise.all([
     prisma.user.upsert({
       where: { email: "ada@xenfi.dev" },
-      update: {},
+      update: {
+        name: "Ada Agent",
+        passwordHash,
+        role: "AGENT",
+      },
       create: {
         name: "Ada Agent",
         email: "ada@xenfi.dev",
@@ -33,7 +37,11 @@ export async function seedDatabase(prisma: PrismaClient): Promise<SeedCounts> {
     }),
     prisma.user.upsert({
       where: { email: "grace@xenfi.dev" },
-      update: {},
+      update: {
+        name: "Grace Agent",
+        passwordHash,
+        role: "AGENT",
+      },
       create: {
         name: "Grace Agent",
         email: "grace@xenfi.dev",
@@ -43,7 +51,11 @@ export async function seedDatabase(prisma: PrismaClient): Promise<SeedCounts> {
     }),
     prisma.user.upsert({
       where: { email: "alice@example.com" },
-      update: {},
+      update: {
+        name: "Alice Customer",
+        passwordHash,
+        role: "CUSTOMER",
+      },
       create: {
         name: "Alice Customer",
         email: "alice@example.com",
@@ -53,7 +65,11 @@ export async function seedDatabase(prisma: PrismaClient): Promise<SeedCounts> {
     }),
     prisma.user.upsert({
       where: { email: "bob@example.com" },
-      update: {},
+      update: {
+        name: "Bob Customer",
+        passwordHash,
+        role: "CUSTOMER",
+      },
       create: {
         name: "Bob Customer",
         email: "bob@example.com",
@@ -63,7 +79,11 @@ export async function seedDatabase(prisma: PrismaClient): Promise<SeedCounts> {
     }),
     prisma.user.upsert({
       where: { email: "carol@example.com" },
-      update: {},
+      update: {
+        name: "Carol Customer",
+        passwordHash,
+        role: "CUSTOMER",
+      },
       create: {
         name: "Carol Customer",
         email: "carol@example.com",
