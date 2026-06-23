@@ -1,9 +1,8 @@
-import { CheckCircle2, Clock, Plus, Ticket } from "lucide-react";
-import Link from "next/link";
+import { CheckCircle2, Clock, LayoutDashboard, Ticket } from "lucide-react";
 
+import { NewTicketModal } from "@/components/new-ticket-modal";
 import { StatCard } from "@/components/stat-card";
 import { TicketList } from "@/components/ticket-list";
-import { buttonVariants } from "@/components/ui/button";
 import type { SessionUser } from "@/lib/auth-helpers";
 import { listTickets } from "@/lib/services/tickets";
 
@@ -17,15 +16,15 @@ export async function CustomerDashboard({ user }: { user: SessionUser }) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">My tickets</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="flex items-center gap-2 text-2xl font-semibold text-slate-100">
+            <LayoutDashboard className="h-6 w-6 text-indigo-400" />
+            Dashboard
+          </h1>
+          <p className="mt-1 text-sm text-slate-400">
             Track the status of your support requests.
           </p>
         </div>
-        <Link href="/tickets/new" className={buttonVariants()}>
-          <Plus className="h-4 w-4" />
-          New ticket
-        </Link>
+        <NewTicketModal buttonLabel="New ticket" />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

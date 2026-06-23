@@ -4,6 +4,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // and the Prisma singleton so these are pure unit tests with no database.
 vi.mock("@/auth", () => ({ auth: vi.fn() }));
 vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
+vi.mock("next/cache", () => ({
+  revalidateTag: vi.fn(),
+  unstable_cache: (fn: unknown) => fn,
+}));
 
 // vi.hoisted keeps these mocks available inside the hoisted vi.mock factory.
 const { ticket, user, ticketTag } = vi.hoisted(() => ({

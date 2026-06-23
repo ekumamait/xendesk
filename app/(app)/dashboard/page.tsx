@@ -17,7 +17,7 @@ export default async function DashboardPage({
   // Parse only present, scalar filter params so enum validation stays clean.
   const sp = await searchParams;
   const raw: Record<string, string> = {};
-  for (const key of ["status", "priority", "tagId", "q"]) {
+  for (const key of ["status", "priority", "tagId", "q", "limit"]) {
     const value = sp[key];
     if (typeof value === "string" && value) raw[key] = value;
   }

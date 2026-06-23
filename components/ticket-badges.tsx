@@ -18,7 +18,7 @@ const STATUS_LABELS: Record<TicketStatus, string> = {
 };
 
 const PRIORITY_STYLES: Record<TicketPriority, string> = {
-  LOW: "bg-slate-100 text-slate-600",
+  LOW: "bg-slate-800 text-slate-300",
   MEDIUM: "bg-indigo-100 text-indigo-700",
   HIGH: "bg-red-100 text-red-700",
 };

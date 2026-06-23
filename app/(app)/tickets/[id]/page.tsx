@@ -34,7 +34,7 @@ export default async function TicketDetailPage({
 
       <Link
         href="/dashboard"
-        className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700"
+        className="inline-flex items-center gap-1 text-sm text-slate-400 hover:text-slate-200"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to dashboard
@@ -50,7 +50,7 @@ export default async function TicketDetailPage({
                 {ticket.tags.map(({ tag }) => (
                   <span
                     key={tag.id}
-                    className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600"
+                    className="rounded-full bg-slate-800 px-2.5 py-0.5 text-xs font-medium text-slate-300"
                   >
                     {tag.name}
                   </span>
@@ -59,7 +59,7 @@ export default async function TicketDetailPage({
               <CardTitle className="text-xl">{ticket.title}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm whitespace-pre-wrap text-slate-700">
+              <p className="text-sm whitespace-pre-wrap text-slate-200">
                 {ticket.description}
               </p>
             </CardContent>
@@ -116,8 +116,8 @@ export default async function TicketDetailPage({
 function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <span className="text-slate-500">{label}</span>
-      <span className="text-right font-medium text-slate-900">{value}</span>
+      <span className="text-slate-400">{label}</span>
+      <span className="text-right font-medium text-slate-100">{value}</span>
     </div>
   );
 }

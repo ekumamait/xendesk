@@ -14,12 +14,12 @@ export function TicketList({
 }) {
   if (tickets.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white py-16 text-center">
-        <Inbox className="h-10 w-10 text-slate-300" />
-        <p className="mt-3 text-sm font-medium text-slate-700">
+      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-700 bg-slate-900/80 py-16 text-center">
+        <Inbox className="h-10 w-10 text-slate-500" />
+        <p className="mt-3 text-sm font-medium text-slate-200">
           No tickets found
         </p>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-400">
           Tickets will appear here once created.
         </p>
       </div>
@@ -27,23 +27,23 @@ export function TicketList({
   }
 
   return (
-    <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <ul className="divide-y divide-slate-800 overflow-hidden rounded-xl border border-slate-800 bg-slate-900/80">
       {tickets.map((ticket) => (
         <li key={ticket.id}>
           <Link
             href={`/tickets/${ticket.id}`}
-            className="flex flex-col gap-3 px-5 py-4 transition-colors hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between"
+            className="flex flex-col gap-3 px-5 py-4 transition-colors hover:bg-slate-800/70 sm:flex-row sm:items-center sm:justify-between"
           >
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <p className="truncate font-medium text-slate-900">
+                <p className="truncate font-medium text-slate-100">
                   {ticket.title}
                 </p>
               </div>
-              <p className="mt-0.5 line-clamp-1 text-sm text-slate-500">
+              <p className="mt-0.5 line-clamp-1 text-sm text-slate-400">
                 {ticket.description}
               </p>
-              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
+              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400">
                 <span>#{ticket.id.slice(-6)}</span>
                 <span>{formatDate(ticket.createdAt)}</span>
                 {showCustomer && <span>by {ticket.customer.name}</span>}
@@ -59,7 +59,7 @@ export function TicketList({
                 {ticket.tags.map(({ tag }) => (
                   <span
                     key={tag.id}
-                    className="rounded-full bg-slate-100 px-2 py-0.5 text-slate-600"
+                    className="rounded-full bg-slate-800 px-2 py-0.5 text-slate-300"
                   >
                     {tag.name}
                   </span>

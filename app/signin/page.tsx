@@ -18,8 +18,8 @@ export default async function SignInPage() {
           <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-600 text-white">
             <LifeBuoy className="h-6 w-6" />
           </span>
-          <h1 className="text-2xl font-semibold text-slate-900">XenDesk</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-semibold text-slate-100">XenDesk</h1>
+          <p className="mt-1 text-sm text-slate-400">
             Internal support &amp; ticketing for XenFi Systems
           </p>
         </div>
@@ -27,15 +27,15 @@ export default async function SignInPage() {
         <Card>
           <CardContent className="space-y-5 py-6">
             <SignInForm />
-            <div className="border-t border-slate-100 pt-4">
+            <div className="border-t border-slate-800 pt-4">
               <SeedButton />
             </div>
           </CardContent>
         </Card>
 
-        <div className="rounded-lg bg-slate-100 p-3 text-center text-xs text-slate-500">
+        <div className="rounded-lg bg-slate-900/90 p-3 text-center text-xs text-slate-400">
           Demo password for all seeded accounts:{" "}
-          <code className="font-mono text-slate-700">Password123!</code>
+          <code className="font-mono text-slate-200">Password123!</code>
         </div>
       </div>
     </div>

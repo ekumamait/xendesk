@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     // Only forward params that are actually present so enums validate cleanly.
     const sp = request.nextUrl.searchParams;
     const raw: Record<string, string> = {};
-    for (const key of ["status", "priority", "tagId", "q"]) {
+    for (const key of ["status", "priority", "tagId", "q", "limit"]) {
       const value = sp.get(key);
       if (value) raw[key] = value;
     }

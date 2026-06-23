@@ -85,13 +85,13 @@ export function SignInForm() {
       </Button>
 
       <div className="flex flex-wrap items-center gap-2 pt-2">
-        <span className="text-xs text-slate-500">Quick fill:</span>
+        <span className="text-xs text-slate-400">Quick fill:</span>
         {DEMO_ACCOUNTS.map((account) => (
           <button
             key={account.email}
             type="button"
             onClick={() => fillDemo(account.email)}
-            className="rounded-full border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100"
+            className="rounded-full border border-slate-700 px-2.5 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800"
           >
             {account.label}
           </button>

@@ -1,5 +1,6 @@
 import { HttpError, isAgent, type SessionUser } from "@/lib/auth-helpers";
 import { Prisma } from "@/lib/generated/prisma/client";
+import { unstable_cache, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import type {
   CreateTicketInput,
@@ -11,7 +12,7 @@ import type {
 const ticketListInclude = {
   customer: { select: { id: true, name: true, email: true } },
   agent: { select: { id: true, name: true, email: true } },
-  tags: { include: { tag: true } },
+  tags: { select: { tag: { select: { id: true, name: true } } } },
   _count: { select: { comments: true } },
 } satisfies Prisma.TicketInclude;
 
@@ -40,7 +41,7 @@ export type TicketDetail = Prisma.TicketGetPayload<{
  */
 export async function listTickets(
   user: SessionUser,
-  query: ListTicketsQuery,
+  query: Partial<ListTicketsQuery>,
 ): Promise<TicketListItem[]> {
   const where: Prisma.TicketWhereInput = {};
 
@@ -52,7 +53,7 @@ export async function listTickets(
   if (query.status) where.status = query.status;
   if (query.priority) where.priority = query.priority;
   if (query.tagId) where.tags = { some: { tagId: query.tagId } };
-  if (query.q) {
+  if (query.q && query.q.length >= 2) {
     where.OR = [
       { title: { contains: query.q, mode: "insensitive" } },
       { description: { contains: query.q, mode: "insensitive" } },
@@ -63,6 +64,7 @@ export async function listTickets(
     where,
     include: ticketListInclude,
     orderBy: [{ createdAt: "desc" }],
+    take: query.limit ?? 50,
   });
 }
 
@@ -90,7 +92,7 @@ export async function createTicket(
   user: SessionUser,
   input: CreateTicketInput,
 ): Promise<TicketDetail> {
-  return prisma.ticket.create({
+  const ticket = await prisma.ticket.create({
     data: {
       title: input.title,
       description: input.description,
@@ -100,6 +102,9 @@ export async function createTicket(
     },
     include: ticketDetailInclude,
   });
+
+  revalidateTag("ticket-metrics", "max");
+  return ticket;
 }
 
 /**
@@ -137,11 +142,13 @@ export async function updateTicket(
       await tx.ticketTag.deleteMany({ where: { ticketId: id } });
       data.tags = { create: input.tagIds.map((tagId) => ({ tagId })) };
     }
-    return tx.ticket.update({
+    const ticket = await tx.ticket.update({
       where: { id },
       data,
       include: ticketDetailInclude,
     });
+    revalidateTag("ticket-metrics", "max");
+    return ticket;
   });
 }
 
@@ -150,6 +157,7 @@ export async function deleteTicket(id: string): Promise<void> {
   if (!existing) throw new HttpError(404, "Ticket not found");
   // Comments and ticket-tag rows cascade via the schema.
   await prisma.ticket.delete({ where: { id } });
+  revalidateTag("ticket-metrics", "max");
 }
 
 export type TicketMetrics = {
@@ -161,29 +169,43 @@ export type TicketMetrics = {
   byPriority: { LOW: number; MEDIUM: number; HIGH: number };
 };
 
-/** Aggregate counts for the agent overview, computed with indexed queries. */
-export async function getTicketMetrics(): Promise<TicketMetrics> {
-  const [total, open, inProgress, resolved, unassigned, low, medium, high] =
-    await Promise.all([
-      prisma.ticket.count(),
-      prisma.ticket.count({ where: { status: "OPEN" } }),
-      prisma.ticket.count({ where: { status: "IN_PROGRESS" } }),
-      prisma.ticket.count({ where: { status: "RESOLVED" } }),
-      // Active tickets without an assigned agent.
+const getCachedTicketMetrics = unstable_cache(
+  async (): Promise<TicketMetrics> => {
+    const [statusGroups, priorityGroups, unassigned] = await Promise.all([
+      prisma.ticket.groupBy({ by: ["status"], _count: { _all: true } }),
+      prisma.ticket.groupBy({ by: ["priority"], _count: { _all: true } }),
       prisma.ticket.count({
         where: { agentId: null, status: { not: "RESOLVED" } },
       }),
-      prisma.ticket.count({ where: { priority: "LOW" } }),
-      prisma.ticket.count({ where: { priority: "MEDIUM" } }),
-      prisma.ticket.count({ where: { priority: "HIGH" } }),
     ]);
 
-  return {
-    total,
-    open,
-    inProgress,
-    resolved,
-    unassigned,
-    byPriority: { LOW: low, MEDIUM: medium, HIGH: high },
-  };
+    const statusCounts = { OPEN: 0, IN_PROGRESS: 0, RESOLVED: 0 };
+    for (const row of statusGroups) {
+      statusCounts[row.status] = row._count._all;
+    }
+
+    const priorityCounts = { LOW: 0, MEDIUM: 0, HIGH: 0 };
+    for (const row of priorityGroups) {
+      priorityCounts[row.priority] = row._count._all;
+    }
+
+    return {
+      total:
+        statusCounts.OPEN +
+        statusCounts.IN_PROGRESS +
+        statusCounts.RESOLVED,
+      open: statusCounts.OPEN,
+      inProgress: statusCounts.IN_PROGRESS,
+      resolved: statusCounts.RESOLVED,
+      unassigned,
+      byPriority: priorityCounts,
+    };
+  },
+  ["ticket-metrics"],
+  { revalidate: 30, tags: ["ticket-metrics"] },
+);
+
+/** Aggregate counts for the agent overview, cached briefly to reduce render latency. */
+export async function getTicketMetrics(): Promise<TicketMetrics> {
+  return getCachedTicketMetrics();
 }

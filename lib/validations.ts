@@ -50,5 +50,6 @@ export const listTicketsQuerySchema = z.object({
   priority: ticketPriorityEnum.optional(),
   tagId: z.string().optional(),
   q: z.string().trim().max(140).optional(),
+  limit: z.coerce.number().int().min(1).max(100).optional().default(50),
 });
 export type ListTicketsQuery = z.infer<typeof listTicketsQuerySchema>;
