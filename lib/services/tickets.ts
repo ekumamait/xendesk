@@ -151,3 +151,39 @@ export async function deleteTicket(id: string): Promise<void> {
   // Comments and ticket-tag rows cascade via the schema.
   await prisma.ticket.delete({ where: { id } });
 }
+
+export type TicketMetrics = {
+  total: number;
+  open: number;
+  inProgress: number;
+  resolved: number;
+  unassigned: number;
+  byPriority: { LOW: number; MEDIUM: number; HIGH: number };
+};
+
+/** Aggregate counts for the agent overview, computed with indexed queries. */
+export async function getTicketMetrics(): Promise<TicketMetrics> {
+  const [total, open, inProgress, resolved, unassigned, low, medium, high] =
+    await Promise.all([
+      prisma.ticket.count(),
+      prisma.ticket.count({ where: { status: "OPEN" } }),
+      prisma.ticket.count({ where: { status: "IN_PROGRESS" } }),
+      prisma.ticket.count({ where: { status: "RESOLVED" } }),
+      // Active tickets without an assigned agent.
+      prisma.ticket.count({
+        where: { agentId: null, status: { not: "RESOLVED" } },
+      }),
+      prisma.ticket.count({ where: { priority: "LOW" } }),
+      prisma.ticket.count({ where: { priority: "MEDIUM" } }),
+      prisma.ticket.count({ where: { priority: "HIGH" } }),
+    ]);
+
+  return {
+    total,
+    open,
+    inProgress,
+    resolved,
+    unassigned,
+    byPriority: { LOW: low, MEDIUM: medium, HIGH: high },
+  };
+}
