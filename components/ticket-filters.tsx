@@ -4,17 +4,36 @@ import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { DropdownSelect } from "@/components/ui/dropdown-select";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 
-type Filters = { status: string; priority: string; tagId: string; q: string };
+export type TicketFilterState = {
+  status: string;
+  priority: string;
+  tagId: string;
+  q: string;
+};
+
+type TicketFiltersMode = "server" | "client";
+
+function normalizeFilters(filters: TicketFilterState): TicketFilterState {
+  const q = filters.q.trim();
+  return {
+    ...filters,
+    q: q.length >= 2 ? q : "",
+  };
+}
 
 export function TicketFilters({
   tags,
   initial,
+  mode = "server",
+  onFiltersChange,
 }: {
   tags: { id: string; name: string }[];
-  initial: Partial<Filters>;
+  initial: Partial<TicketFilterState>;
+  mode?: TicketFiltersMode;
+  onFiltersChange?: (filters: TicketFilterState) => void;
 }) {
   const router = useRouter();
   const [status, setStatus] = useState(initial.status ?? "");
@@ -23,31 +42,43 @@ export function TicketFilters({
   const [q, setQ] = useState(initial.q ?? "");
   const isFirstRender = useRef(true);
 
-  function pushFilters(next: Filters) {
+  function pushFilters(next: TicketFilterState) {
+    const normalized = normalizeFilters(next);
     const params = new URLSearchParams();
-    if (next.status) params.set("status", next.status);
-    if (next.priority) params.set("priority", next.priority);
-    if (next.tagId) params.set("tagId", next.tagId);
-    if (next.q) params.set("q", next.q);
+    if (normalized.status) params.set("status", normalized.status);
+    if (normalized.priority) params.set("priority", normalized.priority);
+    if (normalized.tagId) params.set("tagId", normalized.tagId);
+    if (normalized.q) params.set("q", normalized.q);
     const qs = params.toString();
-    router.replace(qs ? `/dashboard?${qs}` : "/dashboard");
+    const nextPath = qs ? `/dashboard?${qs}` : "/dashboard";
+
+    if (mode === "server") {
+      router.replace(nextPath);
+    } else {
+      window.history.replaceState(null, "", nextPath);
+      onFiltersChange?.(normalized);
+    }
   }
 
-  // Debounce filter updates so we avoid a server navigation for every tiny change.
+  // Keep status/priority/tag changes immediate for snappy dropdown UX.
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
       return;
     }
+    pushFilters({ status, priority, tagId, q });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, priority, tagId]);
+
+  // Debounce text search so typing does not trigger a navigation on every key press.
+  useEffect(() => {
+    if (isFirstRender.current) return;
     const timeout = setTimeout(() => {
-      const search = q.trim();
-      // Ignore 1-char searches, which are noisy and often very slow on larger tables.
-      const nextQ = search.length >= 2 ? search : "";
-      pushFilters({ status, priority, tagId, q: nextQ });
+      pushFilters({ status, priority, tagId, q });
     }, 250);
     return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, priority, tagId, q]);
+  }, [q]);
 
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -61,37 +92,39 @@ export function TicketFilters({
         />
       </div>
 
-      <Select
+      <DropdownSelect
+        label="Status"
         value={status}
-        onChange={(e) => setStatus(e.target.value)}
-      >
-        <option value="">All statuses</option>
-        <option value="OPEN">Open</option>
-        <option value="IN_PROGRESS">In Progress</option>
-        <option value="RESOLVED">Resolved</option>
-      </Select>
+        onChange={setStatus}
+        options={[
+          { value: "", label: "All statuses" },
+          { value: "OPEN", label: "Open" },
+          { value: "IN_PROGRESS", label: "In Progress" },
+          { value: "RESOLVED", label: "Resolved" },
+        ]}
+      />
 
-      <Select
+      <DropdownSelect
+        label="Priority"
         value={priority}
-        onChange={(e) => setPriority(e.target.value)}
-      >
-        <option value="">All priorities</option>
-        <option value="LOW">Low</option>
-        <option value="MEDIUM">Medium</option>
-        <option value="HIGH">High</option>
-      </Select>
+        onChange={setPriority}
+        options={[
+          { value: "", label: "All priorities" },
+          { value: "LOW", label: "Low" },
+          { value: "MEDIUM", label: "Medium" },
+          { value: "HIGH", label: "High" },
+        ]}
+      />
 
-      <Select
+      <DropdownSelect
+        label="Tags"
         value={tagId}
-        onChange={(e) => setTagId(e.target.value)}
-      >
-        <option value="">All tags</option>
-        {tags.map((tag) => (
-          <option key={tag.id} value={tag.id}>
-            {tag.name}
-          </option>
-        ))}
-      </Select>
+        onChange={setTagId}
+        options={[
+          { value: "", label: "All tags" },
+          ...tags.map((tag) => ({ value: tag.id, label: tag.name })),
+        ]}
+      />
     </div>
   );
 }

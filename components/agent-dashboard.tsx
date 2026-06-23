@@ -1,9 +1,8 @@
-import { AlertTriangle, Inbox, Layers, UserX } from "lucide-react";
+import { AlertTriangle, Inbox, Layers, LayoutDashboard, UserX } from "lucide-react";
 
+import { AgentTicketBrowser } from "@/components/agent-ticket-browser";
 import { NewTicketModal } from "@/components/new-ticket-modal";
 import { StatCard } from "@/components/stat-card";
-import { TicketFilters } from "@/components/ticket-filters";
-import { TicketList } from "@/components/ticket-list";
 import type { SessionUser } from "@/lib/auth-helpers";
 import { listTags } from "@/lib/services/tags";
 import { getTicketMetrics, listTickets } from "@/lib/services/tickets";
@@ -19,15 +18,16 @@ export async function AgentDashboard({
   const [metrics, tags, tickets] = await Promise.all([
     getTicketMetrics(),
     listTags(),
-    listTickets(user, filters),
+    listTickets(user, { limit: 100 }),
   ]);
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-100">
-            Agent dashboard
+          <h1 className="flex items-center gap-2 text-2xl font-semibold text-slate-100">
+            <LayoutDashboard className="h-6 w-6 text-indigo-400" />
+            Dashboard
           </h1>
           <p className="mt-1 text-sm text-slate-400">
             Overview of all support tickets across XenFi.
@@ -63,9 +63,11 @@ export async function AgentDashboard({
         />
       </div>
 
-      <TicketFilters tags={tags} initial={filters} />
-
-      <TicketList tickets={tickets} showCustomer />
+      <AgentTicketBrowser
+        initialTickets={tickets}
+        tags={tags}
+        initialFilters={filters}
+      />
     </div>
   );
 }

@@ -5,7 +5,7 @@ and track tickets; support agents triage, assign, prioritize, and resolve them â
 all with role-based access control, a threaded conversation per ticket, and a
 real-time-feeling agent dashboard.
 
-- **Live demo:** _add your Vercel URL here_
+- **Live demo:** [XenDesk](https://xendesk.vercel.app/)
 - **Repository:** https://github.com/ekumamait/xendesk
 
 ---
@@ -213,53 +213,11 @@ without a database:
 - Ticket service logic (ownership scoping, 404 hiding, status changes, and
   agent-role assignment validation).
 
----
+```bash
+npm run test:e2e
+```
 
-## Deployment (Vercel + Neon)
 
-1. Create a Neon project and copy the **pooled** and **direct** connection
-  strings.
-2. Import this repo into Vercel.
-3. In **Project Settings -> Environment Variables**, add:
-  - `DATABASE_URL` (pooled)
-  - `DIRECT_URL` (direct/non-pooled)
-  - `AUTH_SECRET` (generate with `npx auth secret`)
-  - `AUTH_URL` (for example, `https://your-app.vercel.app`)
-4. Redeploy. The `build` script runs `prisma migrate deploy` before `next build`,
-  so migrations are applied automatically on each deploy.
-5. After the first deploy, seed data from the sign-in page or run
-  `npm run db:seed` against production.
 
-### Fixing `datasource.url property is required` on Vercel
 
-This error means Prisma CLI did not receive any database URL during build.
 
-- Confirm all required env vars exist in Vercel for the environment you are deploying (Preview/Production).
-- Ensure variable names are exact (`DATABASE_URL`, `DIRECT_URL`, `AUTH_SECRET`, `AUTH_URL`).
-- If you use Vercel Postgres integration, Prisma also accepts
-  `POSTGRES_URL_NON_POOLING`, `POSTGRES_PRISMA_URL`, or `POSTGRES_URL`.
-- After updating env vars, trigger a **new deployment** (not just a cacheless rebuild).
-
----
-
-## CI
-
-`.github/workflows/ci.yml` runs on every push to `main`/`dev` and on pull
-requests: install -> `prisma validate` -> lint -> typecheck -> unit tests -> build.
-
-CI uses GitHub repository secrets for build-time env values:
-`DATABASE_URL`, `DIRECT_URL`, `AUTH_SECRET`, and `AUTH_URL`.
-
----
-
-## Notable trade-offs
-
-- **Polling over websockets** for the comment thread: simpler and stateless,
-  which suits serverless hosting; a websocket/SSE layer could replace it later.
-- **Service layer reads in server components** instead of always going through
-  HTTP: avoids an extra round trip and centralizes authorization, at the cost of
-  two read paths (service for SSR, REST for client mutations/polling).
-- **Credentials auth** for a self-contained demo; the structure makes adding
-  OAuth providers straightforward.
-- **Cross-tenant reads return `404`** rather than `403` to avoid leaking the
-  existence of other customers' tickets.

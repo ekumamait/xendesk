@@ -1,4 +1,4 @@
-import { CheckCircle2, Clock, Ticket } from "lucide-react";
+import { CheckCircle2, Clock, LayoutDashboard, Ticket } from "lucide-react";
 
 import { NewTicketModal } from "@/components/new-ticket-modal";
 import { StatCard } from "@/components/stat-card";
@@ -16,7 +16,10 @@ export async function CustomerDashboard({ user }: { user: SessionUser }) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-100">My tickets</h1>
+          <h1 className="flex items-center gap-2 text-2xl font-semibold text-slate-100">
+            <LayoutDashboard className="h-6 w-6 text-indigo-400" />
+            Dashboard
+          </h1>
           <p className="mt-1 text-sm text-slate-400">
             Track the status of your support requests.
           </p>

@@ -5,9 +5,9 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { DropdownSelect } from "@/components/ui/dropdown-select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
@@ -91,16 +91,17 @@ export function NewTicketForm({
           </div>
 
           <div>
-            <Label htmlFor="priority">Priority</Label>
-            <Select
-              id="priority"
+            <Label>Priority</Label>
+            <DropdownSelect
+              label="Priority"
               value={priority}
-              onChange={(e) => setPriority(e.target.value)}
-            >
-              <option value="LOW">Low</option>
-              <option value="MEDIUM">Medium</option>
-              <option value="HIGH">High</option>
-            </Select>
+              onChange={setPriority}
+              options={[
+                { value: "LOW", label: "Low" },
+                { value: "MEDIUM", label: "Medium" },
+                { value: "HIGH", label: "High" },
+              ]}
+            />
           </div>
 
           {tags.length > 0 && (

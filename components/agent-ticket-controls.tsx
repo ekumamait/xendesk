@@ -4,8 +4,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DropdownSelect } from "@/components/ui/dropdown-select";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 type Agent = { id: string; name: string };
@@ -31,6 +31,9 @@ export function AgentTicketControls({
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [tagIds, setTagIds] = useState<string[]>(selectedTagIds);
+  const [statusValue, setStatusValue] = useState(status);
+  const [priorityValue, setPriorityValue] = useState(priority);
+  const [agentValue, setAgentValue] = useState(agentId ?? "");
 
   async function patch(payload: Record<string, unknown>) {
     setSaving(true);
@@ -59,47 +62,56 @@ export function AgentTicketControls({
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <Label htmlFor="status">Status</Label>
-          <Select
-            id="status"
-            defaultValue={status}
-            onChange={(e) => patch({ status: e.target.value })}
-          >
-            <option value="OPEN">Open</option>
-            <option value="IN_PROGRESS">In Progress</option>
-            <option value="RESOLVED">Resolved</option>
-          </Select>
+          <Label>Status</Label>
+          <DropdownSelect
+            label="Status"
+            value={statusValue}
+            onChange={(value) => {
+              setStatusValue(value);
+              patch({ status: value });
+            }}
+            options={[
+              { value: "OPEN", label: "Open" },
+              { value: "IN_PROGRESS", label: "In Progress" },
+              { value: "RESOLVED", label: "Resolved" },
+            ]}
+          />
         </div>
 
         <div>
-          <Label htmlFor="priority">Priority</Label>
-          <Select
-            id="priority"
-            defaultValue={priority}
-            onChange={(e) => patch({ priority: e.target.value })}
-          >
-            <option value="LOW">Low</option>
-            <option value="MEDIUM">Medium</option>
-            <option value="HIGH">High</option>
-          </Select>
+          <Label>Priority</Label>
+          <DropdownSelect
+            label="Priority"
+            value={priorityValue}
+            onChange={(value) => {
+              setPriorityValue(value);
+              patch({ priority: value });
+            }}
+            options={[
+              { value: "LOW", label: "Low" },
+              { value: "MEDIUM", label: "Medium" },
+              { value: "HIGH", label: "High" },
+            ]}
+          />
         </div>
 
         <div>
-          <Label htmlFor="agent">Assigned agent</Label>
-          <Select
-            id="agent"
-            defaultValue={agentId ?? ""}
-            onChange={(e) =>
-              patch({ agentId: e.target.value ? e.target.value : null })
-            }
-          >
-            <option value="">Unassigned</option>
-            {agents.map((agent) => (
-              <option key={agent.id} value={agent.id}>
-                {agent.name}
-              </option>
-            ))}
-          </Select>
+          <Label>Assigned agent</Label>
+          <DropdownSelect
+            label="Assigned agent"
+            value={agentValue}
+            onChange={(value) => {
+              setAgentValue(value);
+              patch({ agentId: value ? value : null });
+            }}
+            options={[
+              { value: "", label: "Unassigned" },
+              ...agents.map((agent) => ({
+                value: agent.id,
+                label: agent.name,
+              })),
+            ]}
+          />
         </div>
 
         {tags.length > 0 && (
