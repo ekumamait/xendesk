@@ -11,7 +11,7 @@ import type {
 const ticketListInclude = {
   customer: { select: { id: true, name: true, email: true } },
   agent: { select: { id: true, name: true, email: true } },
-  tags: { include: { tag: true } },
+  tags: { select: { tag: { select: { id: true, name: true } } } },
   _count: { select: { comments: true } },
 } satisfies Prisma.TicketInclude;
 
@@ -40,7 +40,7 @@ export type TicketDetail = Prisma.TicketGetPayload<{
  */
 export async function listTickets(
   user: SessionUser,
-  query: ListTicketsQuery,
+  query: Partial<ListTicketsQuery>,
 ): Promise<TicketListItem[]> {
   const where: Prisma.TicketWhereInput = {};
 
@@ -52,7 +52,7 @@ export async function listTickets(
   if (query.status) where.status = query.status;
   if (query.priority) where.priority = query.priority;
   if (query.tagId) where.tags = { some: { tagId: query.tagId } };
-  if (query.q) {
+  if (query.q && query.q.length >= 2) {
     where.OR = [
       { title: { contains: query.q, mode: "insensitive" } },
       { description: { contains: query.q, mode: "insensitive" } },
@@ -63,6 +63,7 @@ export async function listTickets(
     where,
     include: ticketListInclude,
     orderBy: [{ createdAt: "desc" }],
+    take: query.limit ?? 50,
   });
 }
 

@@ -55,7 +55,7 @@ export function AgentTicketControls({
     <Card>
       <CardHeader className="flex items-center justify-between">
         <CardTitle>Manage ticket</CardTitle>
-        {saving && <span className="text-xs text-slate-400">Saving…</span>}
+        {saving && <span className="text-xs text-slate-500">Saving...</span>}
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
@@ -117,7 +117,7 @@ export function AgentTicketControls({
                       "rounded-full border px-3 py-1 text-sm font-medium transition-colors",
                       selected
                         ? "border-indigo-600 bg-indigo-600 text-white"
-                        : "border-slate-300 bg-white text-slate-600 hover:bg-slate-100",
+                        : "border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800",
                     )}
                   >
                     {tag.name}

@@ -30,27 +30,29 @@ export function TicketFilters({
     if (next.tagId) params.set("tagId", next.tagId);
     if (next.q) params.set("q", next.q);
     const qs = params.toString();
-    router.push(qs ? `/dashboard?${qs}` : "/dashboard");
+    router.replace(qs ? `/dashboard?${qs}` : "/dashboard");
   }
 
-  // Debounce free-text search to avoid a navigation per keystroke.
+  // Debounce filter updates so we avoid a server navigation for every tiny change.
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
       return;
     }
-    const timeout = setTimeout(
-      () => pushFilters({ status, priority, tagId, q }),
-      350,
-    );
+    const timeout = setTimeout(() => {
+      const search = q.trim();
+      // Ignore 1-char searches, which are noisy and often very slow on larger tables.
+      const nextQ = search.length >= 2 ? search : "";
+      pushFilters({ status, priority, tagId, q: nextQ });
+    }, 250);
     return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q]);
+  }, [status, priority, tagId, q]);
 
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <div className="relative">
-        <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+        <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-500" />
         <Input
           className="pl-9"
           placeholder="Search tickets…"
@@ -61,10 +63,7 @@ export function TicketFilters({
 
       <Select
         value={status}
-        onChange={(e) => {
-          setStatus(e.target.value);
-          pushFilters({ status: e.target.value, priority, tagId, q });
-        }}
+        onChange={(e) => setStatus(e.target.value)}
       >
         <option value="">All statuses</option>
         <option value="OPEN">Open</option>
@@ -74,10 +73,7 @@ export function TicketFilters({
 
       <Select
         value={priority}
-        onChange={(e) => {
-          setPriority(e.target.value);
-          pushFilters({ status, priority: e.target.value, tagId, q });
-        }}
+        onChange={(e) => setPriority(e.target.value)}
       >
         <option value="">All priorities</option>
         <option value="LOW">Low</option>
@@ -87,10 +83,7 @@ export function TicketFilters({
 
       <Select
         value={tagId}
-        onChange={(e) => {
-          setTagId(e.target.value);
-          pushFilters({ status, priority, tagId: e.target.value, q });
-        }}
+        onChange={(e) => setTagId(e.target.value)}
       >
         <option value="">All tags</option>
         {tags.map((tag) => (

@@ -218,21 +218,37 @@ without a database:
 ## Deployment (Vercel + Neon)
 
 1. Create a Neon project and copy the **pooled** and **direct** connection
-   strings.
-2. Import the repo into Vercel.
-3. Add the environment variables (`DATABASE_URL`, `DIRECT_URL`, `AUTH_SECRET`,
-   `AUTH_URL`) in the Vercel project settings.
-4. The `build` script runs `prisma migrate deploy` before `next build`, so
-   migrations are applied automatically on each deploy.
-5. After the first deploy, seed data via the sign-in page button or by running
-   `npm run db:seed` against the production `DIRECT_URL` locally.
+  strings.
+2. Import this repo into Vercel.
+3. In **Project Settings -> Environment Variables**, add:
+  - `DATABASE_URL` (pooled)
+  - `DIRECT_URL` (direct/non-pooled)
+  - `AUTH_SECRET` (generate with `npx auth secret`)
+  - `AUTH_URL` (for example, `https://your-app.vercel.app`)
+4. Redeploy. The `build` script runs `prisma migrate deploy` before `next build`,
+  so migrations are applied automatically on each deploy.
+5. After the first deploy, seed data from the sign-in page or run
+  `npm run db:seed` against production.
+
+### Fixing `datasource.url property is required` on Vercel
+
+This error means Prisma CLI did not receive any database URL during build.
+
+- Confirm all required env vars exist in Vercel for the environment you are deploying (Preview/Production).
+- Ensure variable names are exact (`DATABASE_URL`, `DIRECT_URL`, `AUTH_SECRET`, `AUTH_URL`).
+- If you use Vercel Postgres integration, Prisma also accepts
+  `POSTGRES_URL_NON_POOLING`, `POSTGRES_PRISMA_URL`, or `POSTGRES_URL`.
+- After updating env vars, trigger a **new deployment** (not just a cacheless rebuild).
 
 ---
 
 ## CI
 
 `.github/workflows/ci.yml` runs on every push to `main`/`dev` and on pull
-requests: install → `prisma validate` → lint → typecheck → unit tests → build.
+requests: install -> `prisma validate` -> lint -> typecheck -> unit tests -> build.
+
+CI uses GitHub repository secrets for build-time env values:
+`DATABASE_URL`, `DIRECT_URL`, `AUTH_SECRET`, and `AUTH_URL`.
 
 ---
 

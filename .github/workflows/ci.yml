@@ -38,10 +38,11 @@ jobs:
       - name: Unit tests
         run: npm run test
 
-      # Build with placeholder secrets; pages are dynamic so no DB is hit here.
+      # Build with repository secrets so CI matches deploy-time configuration.
       - name: Build
         run: npx next build
         env:
-          DATABASE_URL: postgresql://user:pass@localhost:5432/xendesk
-          DIRECT_URL: postgresql://user:pass@localhost:5432/xendesk
-          AUTH_SECRET: ci-placeholder-secret-not-used-at-runtime
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+          AUTH_URL: ${{ secrets.AUTH_URL }}

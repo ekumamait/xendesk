@@ -13,7 +13,17 @@ import { cn } from "@/lib/utils";
 
 type Tag = { id: string; name: string };
 
-export function NewTicketForm({ tags }: { tags: Tag[] }) {
+export function NewTicketForm({
+  tags,
+  onCancel,
+  onCreated,
+  embedded = false,
+}: {
+  tags: Tag[];
+  onCancel?: () => void;
+  onCreated?: (ticketId: string) => void;
+  embedded?: boolean;
+}) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -47,14 +57,13 @@ export function NewTicketForm({ tags }: { tags: Tag[] }) {
     }
 
     const { ticket } = await res.json();
+    onCreated?.(ticket.id);
     router.push(`/tickets/${ticket.id}`);
     router.refresh();
   }
 
-  return (
-    <Card>
-      <CardContent className="py-6">
-        <form onSubmit={handleSubmit} className="space-y-5">
+  const content = (
+    <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <Label htmlFor="title">Title</Label>
             <Input
@@ -109,7 +118,7 @@ export function NewTicketForm({ tags }: { tags: Tag[] }) {
                         "rounded-full border px-3 py-1 text-sm font-medium transition-colors",
                         selected
                           ? "border-indigo-600 bg-indigo-600 text-white"
-                          : "border-slate-300 bg-white text-slate-600 hover:bg-slate-100",
+                          : "border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800",
                       )}
                     >
                       {tag.name}
@@ -130,7 +139,13 @@ export function NewTicketForm({ tags }: { tags: Tag[] }) {
             <Button
               type="button"
               variant="secondary"
-              onClick={() => router.back()}
+              onClick={() => {
+                if (onCancel) {
+                  onCancel();
+                } else {
+                  router.back();
+                }
+              }}
             >
               Cancel
             </Button>
@@ -139,7 +154,15 @@ export function NewTicketForm({ tags }: { tags: Tag[] }) {
             </Button>
           </div>
         </form>
-      </CardContent>
+  );
+
+  if (embedded) {
+    return content;
+  }
+
+  return (
+    <Card>
+      <CardContent className="py-6">{content}</CardContent>
     </Card>
   );
 }

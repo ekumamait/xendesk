@@ -7,7 +7,7 @@ export function StatCard({
   label,
   value,
   icon: Icon,
-  accent = "text-slate-500",
+  accent = "text-slate-300",
 }: {
   label: string;
   value: number;
@@ -17,10 +17,10 @@ export function StatCard({
   return (
     <Card className="p-5">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-slate-500">{label}</p>
+        <p className="text-sm font-medium text-slate-400">{label}</p>
         <Icon className={cn("h-5 w-5", accent)} />
       </div>
-      <p className="mt-2 text-3xl font-semibold text-slate-900">{value}</p>
+      <p className="mt-2 text-3xl font-semibold text-slate-100">{value}</p>
     </Card>
   );
 }

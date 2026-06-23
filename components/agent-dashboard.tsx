@@ -1,5 +1,6 @@
 import { AlertTriangle, Inbox, Layers, UserX } from "lucide-react";
 
+import { NewTicketModal } from "@/components/new-ticket-modal";
 import { StatCard } from "@/components/stat-card";
 import { TicketFilters } from "@/components/ticket-filters";
 import { TicketList } from "@/components/ticket-list";
@@ -23,13 +24,16 @@ export async function AgentDashboard({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-slate-900">
-          Agent dashboard
-        </h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Overview of all support tickets across XenFi.
-        </p>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold text-slate-100">
+            Agent dashboard
+          </h1>
+          <p className="mt-1 text-sm text-slate-400">
+            Overview of all support tickets across XenFi.
+          </p>
+        </div>
+        <NewTicketModal buttonLabel="New ticket" />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -55,7 +59,7 @@ export async function AgentDashboard({
           label="Total tickets"
           value={metrics.total}
           icon={Layers}
-          accent="text-slate-500"
+          accent="text-slate-300"
         />
       </div>
 

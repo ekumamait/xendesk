@@ -10,7 +10,7 @@ export default async function AppLayout({
   const user = await requireUser();
 
   return (
-    <div className="flex min-h-full flex-col">
+    <div className="flex min-h-full flex-col bg-slate-950 text-slate-100">
       <AppNav user={user} />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
         {children}
