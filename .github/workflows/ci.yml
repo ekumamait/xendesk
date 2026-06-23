@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+
+# Cancel superseded runs on the same ref to save CI minutes.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # postinstall runs `prisma generate` (no database connection required).
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate Prisma schema
+        run: npx prisma validate
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm run test
+
+      # Build with placeholder secrets; pages are dynamic so no DB is hit here.
+      - name: Build
+        run: npx next build
+        env:
+          DATABASE_URL: postgresql://user:pass@localhost:5432/xendesk
+          DIRECT_URL: postgresql://user:pass@localhost:5432/xendesk
+          AUTH_SECRET: ci-placeholder-secret-not-used-at-runtime
